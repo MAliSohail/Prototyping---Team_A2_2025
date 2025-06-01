@@ -1,3 +1,8 @@
+/*This Arduino code is designed to test a dual DC motor setup (Motor A and Motor B) controlled via an L298N motor driver module. It runs a sequence of movements: forward, backward, 
+left turn, right turn, and stop — helping verify correct wiring and motor functionality. The enable pins are assumed to be connected (jumpers removed), so the code explicitly powers them on.*/
+
+
+
 // Motor A (Left Motor) pin assignments
 int motor1Pin1 = 7;  // IN1 connected to left motor direction pin 1
 int motor1Pin2 = 8;  // IN2 connected to left motor direction pin 2
