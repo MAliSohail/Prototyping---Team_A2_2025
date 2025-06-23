@@ -1,0 +1,96 @@
+// === Pin Definitions ===
+#define ENA 11   // Right motor speed
+#define IN1 6  // Right motor direction
+#define IN2 7   // Right motor direction
+
+#define ENB 10   // Left motor speed
+#define IN3 4  // Left motor direction
+#define IN4 5   // Left motor direction
+
+#define IR_LEFT 13
+#define IR_RIGHT 12
+
+// === Adjustable speed ===
+int motorSpeed = 65; // adjust from 0-255
+
+void setup() {
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(ENA, OUTPUT);
+
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+  pinMode(ENB, OUTPUT);
+
+  pinMode(IR_LEFT, INPUT);
+  pinMode(IR_RIGHT, INPUT);
+
+  stopMotors();
+}
+
+void loop() {
+  int leftIR = digitalRead(IR_LEFT);
+  int rightIR = digitalRead(IR_RIGHT);
+
+  // Case 1: Both LOW -> Both motors forward
+  if (leftIR == LOW && rightIR == LOW) {
+    moveForward();
+  }
+  // Case 2: Both HIGH -> Both motors stopped
+  else if (leftIR == HIGH && rightIR == HIGH) {
+    stopMotors();
+  }
+  // Case 3: Mismatch - run the motor on the side with LOW sensor continuously
+  else {
+    // Don't stop motors here unconditionally!
+    if (leftIR == LOW && rightIR == HIGH) {
+      runRightMotor();
+      stopLeftMotor();
+    }
+    else if (leftIR == HIGH && rightIR == LOW) {
+      runLeftMotor();
+      stopRightMotor();
+    }
+  }
+}
+
+// === Helper functions ===
+
+void moveForward() {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  analogWrite(ENA, motorSpeed);
+
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENB, motorSpeed);
+}
+
+void stopMotors() {
+  stopLeftMotor();
+  stopRightMotor();
+}
+
+void runLeftMotor() {
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENB, motorSpeed);
+}
+
+void stopLeftMotor() {
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENB, 0);
+}
+
+void runRightMotor() {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  analogWrite(ENA, motorSpeed);
+}
+
+void stopRightMotor() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  analogWrite(ENA, 0);
+}
