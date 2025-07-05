@@ -1,4 +1,4 @@
-# Line-Following and Obstacle-Detection Robot#
+# Line-Following and Obstacle-Detection Robot
 This repository contains the code, design files, and documentation for an Arduino-based line-following robot with autonomous navigation and obstacle detection capabilities.
 The robot uses infrared (IR) sensors for line tracking and a color sensor for identifying obstacles. Its chassis is designed in CAD to ensure optimal sensor placement and efficient movement.
 
