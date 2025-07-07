@@ -22,7 +22,7 @@ An L298 motor driver processes Arduino commands to precisely control motor speed
 
 ## Team Collaboration
 This project was a collective effort, with all team members actively contributing to design, coding, and testing.
-Hardware and software decisions were made collaboratively, with each component rigorously reviewed to maintain a high standard of quality.
+Hardware and software decisions were made collaboratively, with each component reviewed to maintain a high standard of quality and functionality.
 
 ## Hardware Components
 Arduino: Processes sensor inputs and sends motor control signals.
