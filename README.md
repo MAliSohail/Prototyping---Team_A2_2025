@@ -7,7 +7,7 @@ A color sensor enables it to identify and avoid obstacles based on color differe
 This project demonstrates the integration of multiple sensors and control systems to achieve real-time navigation and obstacle avoidance.
 
 ## Key Features
-CAD-Designed Holders
+### CAD-Designed Holders
 Carefully designed in CAD software for structural stability and optimal placement of sensors and motors.
 
 ### Line Tracking
