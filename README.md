@@ -24,7 +24,8 @@ This project was a collective effort, with all team members actively contributin
 Hardware and software decisions were made collaboratively, with each component reviewed to maintain a high standard of quality and functionality.
 
 ## Hardware Components
-Arduino: Processes sensor inputs and sends motor control signals.
+### Arduino: 
+Processes sensor inputs and sends motor control signals.
 
 ### IR Sensors: 
 Used for line detection and path following.
