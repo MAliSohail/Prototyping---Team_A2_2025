@@ -1,0 +1,269 @@
+
+#include <Servo.h>
+
+#define ENA 9
+#define IN1 8
+#define IN2 7
+#define ENB 3
+#define IN3 5
+#define IN4 4
+
+#define TRIG_PIN 12
+#define ECHO_PIN 13
+
+#define SERVO_PIN 6
+
+#define IR_LEFT 2
+#define IR_RIGHT 10
+
+#define S0 A0
+#define S1 A1
+#define S2 A2
+#define S3 A3
+#define OUT A4
+
+#define MOTOR_SPEED 150
+#define TURN_SPEED 120
+#define OBSTACLE_DISTANCE 20
+#define SCAN_DELAY 200
+
+Servo ultrasonicServo;
+int currentServoPos = 90;
+bool obstacleDetected = false;
+String detectedColor = "";
+
+void setup() {
+  Serial.begin(9600);
+  
+  pinMode(ENA, OUTPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(ENB, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+  
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+  
+  pinMode(IR_LEFT, INPUT);
+  pinMode(IR_RIGHT, INPUT);
+  
+  pinMode(S0, OUTPUT);
+  pinMode(S1, OUTPUT);
+  pinMode(S2, OUTPUT);
+  pinMode(S3, OUTPUT);
+  pinMode(OUT, INPUT);
+  
+  digitalWrite(S0, HIGH);
+  digitalWrite(S1, LOW);
+  
+  ultrasonicServo.attach(SERVO_PIN);
+  ultrasonicServo.write(90);
+  
+  delay(1000);
+  Serial.println("Autonomous Car Initialized");
+}
+
+void loop() {
+  obstacleDetected = checkObstacle();
+  
+  if (obstacleDetected) {
+    Serial.println("Obstacle detected!");
+    stopMotors();
+    delay(500);
+    
+    detectedColor = detectColor();
+    Serial.println("Detected color: " + detectedColor);
+    
+    if (detectedColor == "RED") {
+      Serial.println("Red obstacle - Stopping");
+      stopMotors();
+      delay(2000);
+    } else {
+      Serial.println("Non-red obstacle - Avoiding");
+      avoidObstacle();
+    }
+  } else {
+    followLine();
+  }
+  
+  delay(50);
+}
+
+void moveForward(int speed = MOTOR_SPEED) {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENA, speed);
+  analogWrite(ENB, speed);
+}
+
+void moveBackward(int speed = MOTOR_SPEED) {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  analogWrite(ENA, speed);
+  analogWrite(ENB, speed);
+}
+
+void turnLeft(int speed = TURN_SPEED) {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENA, speed);
+  analogWrite(ENB, speed);
+}
+
+void turnRight(int speed = TURN_SPEED) {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  analogWrite(ENA, speed);
+  analogWrite(ENB, speed);
+}
+
+void stopMotors() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENA, 0);
+  analogWrite(ENB, 0);
+}
+
+void followLine() {
+  int leftSensor = digitalRead(IR_LEFT);
+  int rightSensor = digitalRead(IR_RIGHT);
+  
+  if (leftSensor == LOW && rightSensor == LOW) {
+    moveForward();
+    Serial.println("Following line - Forward");
+  }
+  else if (leftSensor == LOW && rightSensor == HIGH) {
+    turnLeft();
+    Serial.println("Following line - Turn Left");
+  }
+  else if (leftSensor == HIGH && rightSensor == LOW) {
+    turnRight();
+    Serial.println("Following line - Turn Right");
+  }
+  else {
+    moveForward(MOTOR_SPEED * 0.7);
+    Serial.println("Searching for line");
+  }
+}
+
+bool checkObstacle() {
+  long duration, distance;
+  
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+  
+  duration = pulseIn(ECHO_PIN, HIGH);
+  distance = (duration * 0.034) / 2;
+  
+  Serial.println("Distance: " + String(distance) + " cm");
+  
+  return (distance > 0 && distance < OBSTACLE_DISTANCE);
+}
+
+String detectColor() {
+  int red, green, blue;
+  
+  digitalWrite(S2, LOW);
+  digitalWrite(S3, LOW);
+  red = pulseIn(OUT, LOW);
+  delay(100);
+  
+  digitalWrite(S2, HIGH);
+  digitalWrite(S3, HIGH);
+  green = pulseIn(OUT, LOW);
+  delay(100);
+  
+  digitalWrite(S2, LOW);
+  digitalWrite(S3, HIGH);
+  blue = pulseIn(OUT, LOW);
+  delay(100);
+  
+  Serial.println("RGB Values - R:" + String(red) + " G:" + String(green) + " B:" + String(blue));
+  
+  if (red < green && red < blue) {
+    return "RED";
+  } else if (green < red && green < blue) {
+    return "GREEN";
+  } else if (blue < red && blue < green) {
+    return "BLUE";
+  } else {
+    return "UNKNOWN";
+  }
+}
+
+void avoidObstacle() {
+  Serial.println("Starting obstacle avoidance");
+  
+  int leftDistance = scanDirection(45);
+  delay(SCAN_DELAY);
+  int rightDistance = scanDirection(135);
+  delay(SCAN_DELAY);
+  
+  ultrasonicServo.write(90);
+  currentServoPos = 90;
+  delay(SCAN_DELAY);
+  
+  Serial.println("Left distance: " + String(leftDistance) + " cm");
+  Serial.println("Right distance: " + String(rightDistance) + " cm");
+  
+  if (leftDistance > rightDistance && leftDistance > OBSTACLE_DISTANCE) {
+    Serial.println("Turning left to avoid obstacle");
+    turnLeft();
+    delay(800);
+  } else if (rightDistance > OBSTACLE_DISTANCE) {
+    Serial.println("Turning right to avoid obstacle");
+    turnRight();
+    delay(800);
+  } else {
+    Serial.println("No clear path - backing up");
+    moveBackward();
+    delay(1000);
+    turnRight();
+    delay(500);
+  }
+  
+  stopMotors();
+  delay(500);
+}
+
+int scanDirection(int angle) {
+  ultrasonicServo.write(angle);
+  currentServoPos = angle;
+  delay(SCAN_DELAY);
+  
+  long duration, distance;
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+  
+  duration = pulseIn(ECHO_PIN, HIGH);
+  distance = (duration * 0.034) / 2;
+  
+  return distance;
+}
+
+void printStatus() {
+  Serial.println("=== Car Status ===");
+  Serial.println("Servo Position: " + String(currentServoPos));
+  Serial.println("Obstacle Detected: " + String(obstacleDetected));
+  Serial.println("Last Color: " + detectedColor);
+  Serial.println("IR Left: " + String(digitalRead(IR_LEFT)));
+  Serial.println("IR Right: " + String(digitalRead(IR_RIGHT)));
+  Serial.println("==================");
+}
