@@ -1,0 +1,120 @@
+/*This Arduino code is designed to test a dual DC motor setup (Motor A and Motor B) controlled via an L298N motor driver module. It runs a sequence of movements: forward, backward, 
+left turn, right turn, and stop — helping verify correct wiring and motor functionality. The enable pins are assumed to be connected (jumpers removed), so the code explicitly powers them on.*/
+
+
+
+// Motor A (Left Motor) pin assignments
+int motor1Pin1 = 7;  // IN1 connected to left motor direction pin 1
+int motor1Pin2 = 8;  // IN2 connected to left motor direction pin 2
+
+// Motor B (Right Motor) pin assignments
+int motor2Pin1 = 9;  // IN3 connected to right motor direction pin 1
+int motor2Pin2 = 10; // IN4 connected to right motor direction pin 2
+
+// Enable pins for both motors (remove jumpers on L298N to use these)
+int enableA = 6;     // ENA controls speed of Motor A (via PWM or HIGH/LOW)
+int enableB = 11;    // ENB controls speed of Motor B
+
+void setup() {
+  Serial.begin(9600);  // Start serial communication for debugging
+  
+  // Set all motor control pins as output
+  pinMode(motor1Pin1, OUTPUT);
+  pinMode(motor1Pin2, OUTPUT);
+  pinMode(motor2Pin1, OUTPUT);
+  pinMode(motor2Pin2, OUTPUT);
+  pinMode(enableA, OUTPUT);
+  pinMode(enableB, OUTPUT);
+
+  // Enable both motors at full speed (HIGH = full on)
+  digitalWrite(enableA, HIGH);
+  digitalWrite(enableB, HIGH);
+
+  // Test start message
+  Serial.println("Motor Test Starting...");
+  Serial.println("Testing: Forward, Backward, Left, Right, Stop");
+}
+
+void loop() {
+  // Move forward
+  Serial.println("Moving Forward");
+  moveForward();
+  delay(2000); // Run for 2 seconds
+
+  // Stop motors
+  Serial.println("Stopping");
+  stopMotors();
+  delay(1000);
+
+  // Move backward
+  Serial.println("Moving Backward");
+  moveBackward();
+  delay(2000);
+
+  // Stop again
+  Serial.println("Stopping");
+  stopMotors();
+  delay(1000);
+
+  // Turn left
+  Serial.println("Turning Left");
+  turnLeft();
+  delay(1000);
+
+  Serial.println("Stopping");
+  stopMotors();
+  delay(1000);
+
+  // Turn right
+  Serial.println("Turning Right");
+  turnRight();
+  delay(1000);
+
+  Serial.println("Stopping");
+  stopMotors();
+  delay(2000);
+
+  // End of test cycle
+  Serial.println("--- Test Complete ---");
+  delay(3000);
+}
+
+// Function to move both motors forward
+void moveForward() {
+  digitalWrite(motor1Pin1, HIGH);
+  digitalWrite(motor1Pin2, LOW);
+  digitalWrite(motor2Pin1, HIGH);
+  digitalWrite(motor2Pin2, LOW);
+}
+
+// Function to move both motors backward
+void moveBackward() {
+  digitalWrite(motor1Pin1, LOW);
+  digitalWrite(motor1Pin2, HIGH);
+  digitalWrite(motor2Pin1, LOW);
+  digitalWrite(motor2Pin2, HIGH);
+}
+
+// Function to turn left (left motor backward, right motor forward)
+void turnLeft() {
+  digitalWrite(motor1Pin1, LOW);
+  digitalWrite(motor1Pin2, HIGH);
+  digitalWrite(motor2Pin1, HIGH);
+  digitalWrite(motor2Pin2, LOW);
+}
+
+// Function to turn right (left motor forward, right motor backward)
+void turnRight() {
+  digitalWrite(motor1Pin1, HIGH);
+  digitalWrite(motor1Pin2, LOW);
+  digitalWrite(motor2Pin1, LOW);
+  digitalWrite(motor2Pin2, HIGH);
+}
+
+// Function to stop both motors
+void stopMotors() {
+  digitalWrite(motor1Pin1, LOW);
+  digitalWrite(motor1Pin2, LOW);
+  digitalWrite(motor2Pin1, LOW);
+  digitalWrite(motor2Pin2, LOW);
+}
