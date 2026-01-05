@@ -10,7 +10,7 @@
 #define IR_LEFT 13
 #define IR_RIGHT 12
 
-// === Adjustable speed ===
+// === adjustable speed ===
 int motorSpeed = 65; // adjust from 0-255
 
 void setup() {
